@@ -20,7 +20,7 @@ package org.apache.ibatis.parsing;
  */
 /**
  * 普通记号解析器，处理#{}和${}参数
- * 
+ * 当然，这也是为什么 GenericTokenParser 叫做通用的原因，而 TokenHandler 处理特定的逻辑。
  */
 public class GenericTokenParser {
 
@@ -41,6 +41,9 @@ public class GenericTokenParser {
     if (text != null && text.length() > 0) {
       char[] src = text.toCharArray();
       int offset = 0;
+
+      // search open token
+      // 寻找开始的 openToken 的位置
       int start = text.indexOf(openToken, offset);
       //#{favouriteSection,jdbcType=VARCHAR}
       //这里是循环解析参数，参考GenericTokenParserTest,比如可以解析${first_name} ${initial} ${last_name} reporting.这样的字符串,里面有3个 ${}

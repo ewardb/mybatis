@@ -22,16 +22,22 @@ import java.util.Properties;
  */
 /**
  * 属性解析器
+ * 动态属性解析器
  */
 public class PropertyParser {
 
+
+  //禁止构造 PropertyParser 对象，因为它是一个静态方法的工具类
   private PropertyParser() {
     // Prevent Instantiation
   }
 
   public static String parse(String string, Properties variables) {
+    // <2.1> 创建 VariableTokenHandler 对象
     VariableTokenHandler handler = new VariableTokenHandler(variables);
+    // <2.2> 创建 GenericTokenParser 对象
     GenericTokenParser parser = new GenericTokenParser("${", "}", handler);
+    // <2.3> 执行解析
     return parser.parse(string);
   }
 
@@ -43,6 +49,12 @@ public class PropertyParser {
       this.variables = variables;
     }
 
+    /**
+     * 处理 Token
+     *
+     * @param content Token 字符串
+     * @return 处理后的结果
+     */
     @Override
     public String handleToken(String content) {
       if (variables != null && variables.containsKey(content)) {

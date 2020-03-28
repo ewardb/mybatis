@@ -87,15 +87,16 @@ public class XMLMapperEntityResolver implements EntityResolver {
   //核心就是覆盖这个方法，达到转public DTD到本地DTD的目的
   public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
-    if (publicId != null) {
-      publicId = publicId.toUpperCase(Locale.ENGLISH);
-    }
-    if (systemId != null) {
-      systemId = systemId.toUpperCase(Locale.ENGLISH);
-    }
+      if (publicId != null) {
 
-    InputSource source = null;
-    try {
+        publicId = publicId.toUpperCase(Locale.ENGLISH);
+      }
+      if (systemId != null) {
+        systemId = systemId.toUpperCase(Locale.ENGLISH);
+      }
+
+      InputSource source = null;
+      try {
 		//先找publicId，找不到再找systemId，貌似不可能找不到的说
       String path = doctypeMap.get(publicId);
       source = getInputSource(path, source);

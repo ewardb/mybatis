@@ -35,6 +35,7 @@ public final class PropertyNamer {
     //方法转为属性
   public static String methodToProperty(String name) {
       //去掉get|set|is
+//    "unhappy".substring(2) returns "happy"
     if (name.startsWith("is")) {
       name = name.substring(2);
     } else if (name.startsWith("get") || name.startsWith("set")) {

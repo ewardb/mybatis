@@ -54,35 +54,79 @@ public class Reflector {
   private static final String[] EMPTY_STRING_ARRAY = new String[0];
   //这里用ConcurrentHashMap，多线程支持，作为一个缓存
   private static final Map<Class<?>, Reflector> REFLECTOR_MAP = new ConcurrentHashMap<Class<?>, Reflector>();
-
+  /**
+   * 对应的类
+   */
   private Class<?> type;
   //getter的属性列表
+  /**
+   * 可读属性数组
+   */
   private String[] readablePropertyNames = EMPTY_STRING_ARRAY;
   //setter的属性列表
+  /**
+   * 可写属性集合
+   */
   private String[] writeablePropertyNames = EMPTY_STRING_ARRAY;
+
+  /**
+   * 属性对应的 setting 方法的映射。
+   *
+   * key 为属性名称
+   * value 为 Invoker 对象
+   */
   //setter的方法列表
   private Map<String, Invoker> setMethods = new HashMap<String, Invoker>();
+  /**
+   * 属性对应的 getting 方法的映射。
+   *
+   * key 为属性名称
+   * value 为 Invoker 对象
+   */
   //getter的方法列表
   private Map<String, Invoker> getMethods = new HashMap<String, Invoker>();
+  /**
+   * 属性对应的 setting 方法的方法参数类型的映射。{@link #setMethods}
+   *
+   * key 为属性名称
+   * value 为方法参数类型
+   */
   //setter的类型列表
   private Map<String, Class<?>> setTypes = new HashMap<String, Class<?>>();
+  /**
+   * 属性对应的 getting 方法的返回值类型的映射。{@link #getMethods}
+   *
+   * key 为属性名称
+   * value 为返回值的类型
+   */
   //getter的类型列表
   private Map<String, Class<?>> getTypes = new HashMap<String, Class<?>>();
+  /**
+   * 默认构造方法
+   */
   //构造函数
   private Constructor<?> defaultConstructor;
-
+  /**
+   * 不区分大小写的属性集合
+   */
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<String, String>();
 
   private Reflector(Class<?> clazz) {
+    // 设置对应的类
     type = clazz;
     //加入构造函数
+    // <1> 初始化 defaultConstructor
     addDefaultConstructor(clazz);
     //加入getter
+    // <2> // 初始化 getMethods 和 getTypes ，通过遍历 getting 方法
     addGetMethods(clazz);
     //加入setter
+    // <3> // 初始化 setMethods 和 setTypes ，通过遍历 setting 方法。
     addSetMethods(clazz);
     //加入字段
+    // <4> // 初始化 getMethods + getTypes 和 setMethods + setTypes ，通过遍历 fields 属性。
     addFields(clazz);
+    // <5> 初始化 readablePropertyNames、writeablePropertyNames、caseInsensitivePropertyMap 属性
     readablePropertyNames = getMethods.keySet().toArray(new String[getMethods.keySet().size()]);
     writeablePropertyNames = setMethods.keySet().toArray(new String[setMethods.keySet().size()]);
     for (String propName : readablePropertyNames) {
@@ -94,10 +138,19 @@ public class Reflector {
     }
   }
 
+
+  /**
+   *
+   * @param clazz
+   */
   private void addDefaultConstructor(Class<?> clazz) {
+    // 获得所有构造方法
     Constructor<?>[] consts = clazz.getDeclaredConstructors();
+    // 遍历所有构造方法，查找无参的构造方法
     for (Constructor<?> constructor : consts) {
+      // 判断无参的构造方法
       if (constructor.getParameterTypes().length == 0) {
+        // 设置构造方法可以访问，避免是 private 等修饰符
         if (canAccessPrivateMethods()) {
           try {
             constructor.setAccessible(true);
@@ -105,6 +158,7 @@ public class Reflector {
             // Ignored. This is only a final precaution, nothing we can do.
           }
         }
+        // 如果构造方法可以访问，赋值给 defaultConstructor
         if (constructor.isAccessible()) {
           this.defaultConstructor = constructor;
         }
@@ -112,28 +166,45 @@ public class Reflector {
     }
   }
 
+
+  /**
+   *
+   * @param cls
+   */
   private void addGetMethods(Class<?> cls) {
+    // <1> 属性与其 getting 方法的映射。
     Map<String, List<Method>> conflictingGetters = new HashMap<String, List<Method>>();
+    // <2> 获得所有方法
     //这里getter和setter都调用了getClassMethods，有点浪费效率了。不妨把addGetMethods,addSetMethods合并成一个方法叫addMethods
     Method[] methods = getClassMethods(cls);
+    // <3> 遍历所有方法
     for (Method method : methods) {
       String name = method.getName();
+      // ！！！ <3.1> 参数大于 0 ，说明不是 getting 方法，忽略
+
       if (name.startsWith("get") && name.length() > 3) {
+        //参数为0 说明是 getting
         if (method.getParameterTypes().length == 0) {
+          // <3.3> 获得属性  方法转属性
           name = PropertyNamer.methodToProperty(name);
+          // <3.4> 添加到 conflictingGetters 中
           addMethodConflict(conflictingGetters, name, method);
         }
       } else if (name.startsWith("is") && name.length() > 2) {
+        //参数为0 说明 是is   也是getting方法
+
         if (method.getParameterTypes().length == 0) {
           name = PropertyNamer.methodToProperty(name);
           addMethodConflict(conflictingGetters, name, method);
         }
       }
     }
+    // <4> 解决 getting 冲突方法
     resolveGetterConflicts(conflictingGetters);
   }
 
   private void resolveGetterConflicts(Map<String, List<Method>> conflictingGetters) {
+    // 遍历每个属性，查找其最匹配的方法。因为子类可以覆写父类的方法，所以一个属性，可能对应多个 getting 方法
     for (String propName : conflictingGetters.keySet()) {
       List<Method> getters = conflictingGetters.get(propName);
       Iterator<Method> iterator = getters.iterator();
@@ -188,12 +259,25 @@ public class Reflector {
     resolveSetterConflicts(conflictingSetters);
   }
 
+  /**
+   *
+   * @See addMethodConfilictBak
+   * @param conflictingMethods
+   * @param name
+   * @param method
+   */
   private void addMethodConflict(Map<String, List<Method>> conflictingMethods, String name, Method method) {
     List<Method> list = conflictingMethods.get(name);
     if (list == null) {
       list = new ArrayList<Method>();
       conflictingMethods.put(name, list);
     }
+    list.add(method);
+  }
+
+
+  private void addMethodConfilictBak(Map<String, List<Method>> conflictingMethods, String name, Method method){
+    List<Method> list = conflictingMethods.computeIfAbsent(name, (k) -> new ArrayList<>());
     list.add(method);
   }
 
@@ -293,13 +377,17 @@ public class Reflector {
    * because we want to look for private methods as well.
    * 得到所有方法，包括private方法，包括父类方法.包括接口方法
    *
+   * 是所有方法哦！！！！
    * @param cls The class
    * @return An array containing all methods in this class
    */
   private Method[] getClassMethods(Class<?> cls) {
+    // 每个方法签名与该方法的映射
     Map<String, Method> uniqueMethods = new HashMap<String, Method>();
     Class<?> currentClass = cls;
+    // 循环类，类的父类，类的父类的父类，直到父类为 Object
     while (currentClass != null) {
+      // <1> 记录当前类定义的方法
       addUniqueMethods(uniqueMethods, currentClass.getDeclaredMethods());
 
       // we also need to look for interface methods - 
@@ -319,12 +407,15 @@ public class Reflector {
 
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
+
+      // 忽略 bridge 方法
       if (!currentMethod.isBridge()) {
           //取得签名
         String signature = getSignature(currentMethod);
         // check to see if the method is already known
         // if it is known, then an extended class must have
         // overridden a method
+        // 当 uniqueMethods 不存在时，进行添加
         if (!uniqueMethods.containsKey(signature)) {
           if (canAccessPrivateMethods()) {
             try {
@@ -334,19 +425,30 @@ public class Reflector {
             }
           }
 
+          // 添加到 uniqueMethods 中
           uniqueMethods.put(signature, currentMethod);
         }
       }
     }
   }
 
+
+  /**
+   *
+   * @param method
+   * @return 格式：returnType#方法名:参数名1,参数名2,参数名3
+   * eg:  void#checkPackageAccess:java.lang.ClassLoader,boolean
+   */
   private String getSignature(Method method) {
     StringBuilder sb = new StringBuilder();
+    // 返回类型
     Class<?> returnType = method.getReturnType();
     if (returnType != null) {
       sb.append(returnType.getName()).append('#');
     }
     sb.append(method.getName());
+
+    // 方法参数
     Class<?>[] parameters = method.getParameterTypes();
     for (int i = 0; i < parameters.length; i++) {
       if (i == 0) {
@@ -359,6 +461,14 @@ public class Reflector {
     return sb.toString();
   }
 
+  /**
+   * Checks whether can control member accessible.
+   *
+   * 判断，是否可以修改可访问性
+   *
+   * @return If can control member accessible, it return {@literal true}
+   * @since 3.5.0
+   */
   private static boolean canAccessPrivateMethods() {
     try {
       SecurityManager securityManager = System.getSecurityManager();
