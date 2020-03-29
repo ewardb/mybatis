@@ -217,10 +217,13 @@ public class Reflector {
         while (iterator.hasNext()) {
           Method method = iterator.next();
           Class<?> methodType = method.getReturnType();
+          // 类型相同
           if (methodType.equals(getterType)) {
+            // 返回值了诶选哪个相同，应该在 getClassMethods 方法中，已经合并。所以抛出 ReflectionException 异常
             throw new ReflectionException("Illegal overloaded getter method with ambiguous type for property " 
                 + propName + " in class " + firstMethod.getDeclaringClass()
                 + ".  This breaks the JavaBeans " + "specification and can cause unpredicatble results.");
+            // 不符合选择子类
           } else if (methodType.isAssignableFrom(getterType)) {
             // OK getter type is descendant
           } else if (getterType.isAssignableFrom(methodType)) {
@@ -232,30 +235,47 @@ public class Reflector {
                 + ".  This breaks the JavaBeans " + "specification and can cause unpredicatble results.");
           }
         }
+        // <2> 添加到 getMethods 和 getTypes 中
+
         addGetMethod(propName, getter);
       }
     }
   }
 
   private void addGetMethod(String name, Method method) {
+    // <2.1> 判断是合理的属性名
     if (isValidPropertyName(name)) {
+      // <2.2> 添加到 getMethods 中
       getMethods.put(name, new MethodInvoker(method));
+      // <2.3> 添加到 getTypes 中
       getTypes.put(name, method.getReturnType());
     }
   }
 
+  /**
+   * 初始化 setMethods 和 setTypes
+   * @param cls
+   */
   private void addSetMethods(Class<?> cls) {
+    // 属性与其 setting 方法的映射。
     Map<String, List<Method>> conflictingSetters = new HashMap<String, List<Method>>();
+    // 获得所有方法
     Method[] methods = getClassMethods(cls);
+    // 遍历所有方法
     for (Method method : methods) {
+      // <1> 方法名为 set 开头
+
       String name = method.getName();
       if (name.startsWith("set") && name.length() > 3) {
+        // 参数数量为 1
         if (method.getParameterTypes().length == 1) {
+          // 获得属性  setAbc  ---> abc
           name = PropertyNamer.methodToProperty(name);
           addMethodConflict(conflictingSetters, name, method);
         }
       }
     }
+    // <2> 解决 setting 冲突方法
     resolveSetterConflicts(conflictingSetters);
   }
 
@@ -281,13 +301,20 @@ public class Reflector {
     list.add(method);
   }
 
+  /**
+   * 解决setting 冲突
+   *
+   * @param conflictingSetters  <>  属性名： 方法  </>
+   */
   private void resolveSetterConflicts(Map<String, List<Method>> conflictingSetters) {
+    // 遍历每个属性，查找其最匹配的方法。因为子类可以覆写父类的方法，所以一个属性，可能对应多个 setting 方法
     for (String propName : conflictingSetters.keySet()) {
       List<Method> setters = conflictingSetters.get(propName);
       Method firstMethod = setters.get(0);
       if (setters.size() == 1) {
         addSetMethod(propName, firstMethod);
       } else {
+        //getter的类型列表
         Class<?> expectedType = getTypes.get(propName);
         if (expectedType == null) {
           throw new ReflectionException("Illegal overloaded setter method with ambiguous type for property "
@@ -309,6 +336,7 @@ public class Reflector {
                 + propName + " in class " + firstMethod.getDeclaringClass() + ".  This breaks the JavaBeans " +
                 "specification and can cause unpredicatble results.");
           }
+          // <2> 添加到 setMethods 和 setTypes 中
           addSetMethod(propName, setter);
         }
       }
@@ -322,17 +350,26 @@ public class Reflector {
     }
   }
 
+  /**
+   * 初始化 getMethods + getTypes 和 setMethods + setTypes ，通过遍历 fields 属性。
+   * #addGetMethods(...) 和 #addSetMethods(...) 方法的补充
+   * 因为有些 field ，不存在对应的 setting 或 getting 方法，所以直接使用对应的 field ，而不是方法。
+   * @param clazz
+   */
   private void addFields(Class<?> clazz) {
+    // 获得所有 field 们
     Field[] fields = clazz.getDeclaredFields();
     for (Field field : fields) {
       if (canAccessPrivateMethods()) {
         try {
+          // 设置 field 可访问
           field.setAccessible(true);
         } catch (Exception e) {
           // Ignored. This is only a final precaution, nothing we can do.
         }
       }
       if (field.isAccessible()) {
+        // <1> 添加到 setMethods 和 setTypes 中
         if (!setMethods.containsKey(field.getName())) {
           // issue #379 - removed the check for final because JDK 1.5 allows
           // modification of final fields through reflection (JSR-133). (JGB)
@@ -342,26 +379,34 @@ public class Reflector {
             addSetField(field);
           }
         }
+        // 添加到 getMethods 和 getTypes 中
         if (!getMethods.containsKey(field.getName())) {
           addGetField(field);
         }
       }
     }
+    // 递归，处理父类
     if (clazz.getSuperclass() != null) {
       addFields(clazz.getSuperclass());
     }
   }
 
   private void addSetField(Field field) {
+    // 判断是合理的属性
     if (isValidPropertyName(field.getName())) {
+      // 添加到 setMethods 中
       setMethods.put(field.getName(), new SetFieldInvoker(field));
+      // 添加到 setTypes 中
       setTypes.put(field.getName(), field.getType());
     }
   }
 
   private void addGetField(Field field) {
+
     if (isValidPropertyName(field.getName())) {
+      // 添加到 getMethods 中
       getMethods.put(field.getName(), new GetFieldInvoker(field));
+      // 添加到 getMethods 中
       getTypes.put(field.getName(), field.getType());
     }
   }
@@ -377,7 +422,7 @@ public class Reflector {
    * because we want to look for private methods as well.
    * 得到所有方法，包括private方法，包括父类方法.包括接口方法
    *
-   * 是所有方法哦！！！！
+   * 是  !!!!所有方法哦！！！！
    * @param cls The class
    * @return An array containing all methods in this class
    */
@@ -408,7 +453,7 @@ public class Reflector {
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
 
-      // 忽略 bridge 方法
+      // 忽略 bridge 方法 https://www.zhihu.com/question/54895701/answer/141623158
       if (!currentMethod.isBridge()) {
           //取得签名
         String signature = getSignature(currentMethod);
@@ -596,6 +641,7 @@ public class Reflector {
    * @return The method cache for the class
    */
   public static Reflector forClass(Class<?> clazz) {
+    // 开启缓存，则从 reflectorMap 中获取
     if (classCacheEnabled) {
       // synchronized (clazz) removed see issue #461
         //对于每个类来说，我们假设它是不会变的，这样可以考虑将这个类的信息(构造函数，getter,setter,字段)加入缓存，以提高速度

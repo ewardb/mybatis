@@ -38,7 +38,13 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 public class MetaObject {
 
     //有一个原来的对象，对象包装器，对象工厂，对象包装器工厂
+  /**
+   * 原始 Object 对象
+   */
   private Object originalObject;
+  /**
+   * 封装过的 Object 对象
+   */
   private ObjectWrapper objectWrapper;
   private ObjectFactory objectFactory;
   private ObjectWrapperFactory objectWrapperFactory;
@@ -66,6 +72,14 @@ public class MetaObject {
     }
   }
 
+  /**
+   * 创建 MetaObject 对象
+   *
+   * @param object 原始 Object 对象
+   * @param objectFactory
+   * @param objectWrapperFactory
+   * @return MetaObject 对象
+   */
   public static MetaObject forObject(Object object, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory) {
     if (object == null) {
         //处理一下null,将null包装起来

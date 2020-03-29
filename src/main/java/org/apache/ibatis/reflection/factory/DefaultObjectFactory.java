@@ -63,11 +63,22 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
     // no props for default
   }
 
-  //2.实例化类
+
+
+  /**
+   *  //2.实例化类
+   *
+   * @param type 类 || 接口
+   * @param constructorArgTypes  构造参数
+   * @param constructorArgs 构造参数值
+   * @param <T>
+   * @return
+   */
   private <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
       //如果没有传入constructor，调用空构造函数，核心是调用Constructor.newInstance
+      // <x1> 通过无参构造方法，创建指定类的对象
       if (constructorArgTypes == null || constructorArgs == null) {
         constructor = type.getDeclaredConstructor();
         if (!constructor.isAccessible()) {
@@ -76,6 +87,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
         return constructor.newInstance();
       }
       //如果传入constructor，调用传入的构造函数，核心是调用Constructor.newInstance
+      // <x2> 使用特定构造方法，创建指定类的对象
       constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[constructorArgTypes.size()]));
       if (!constructor.isAccessible()) {
         constructor.setAccessible(true);
@@ -123,9 +135,17 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
     return classToCreate;
   }
 
+
+  /**
+   * 指定类是否为集合类
+   * 是否是Collection的子类
+   * @param type Object type
+   * @param <T>
+   * @return
+   */
   @Override
   public <T> boolean isCollection(Class<T> type) {
-      //是否是Collection的子类
+      //
     return Collection.class.isAssignableFrom(type);
   }
 

@@ -26,47 +26,87 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 /**
  * 对象包装器
+ * 基于 MetaClass 工具类
  * 
  */
 public interface ObjectWrapper {
 
     //get
+  /**
+   * 获得值
+   *
+   * @param prop PropertyTokenizer 对象，相当于键
+   * @return 值
+   */
   Object get(PropertyTokenizer prop);
 
   //set
   void set(PropertyTokenizer prop, Object value);
 
   //查找属性
+  /**
+   * @link MetaClass#findProperty(String, boolean)
+   */
   String findProperty(String name, boolean useCamelCaseMapping);
 
   //取得getter的名字列表
+  /**
+   * @link MetaClass#getGetterNames()
+   */
   String[] getGetterNames();
 
   //取得setter的名字列表
+  /**
+   * @link MetaClass#getSetterNames()
+   */
   String[] getSetterNames();
 
   //取得setter的类型
+  /**
+   * @link MetaClass#getSetterType(String)
+   */
   Class<?> getSetterType(String name);
 
   //取得getter的类型
+  /**
+   * @link MetaClass#getGetterType(String)
+   */
   Class<?> getGetterType(String name);
 
   //是否有指定的setter
+  /**
+   * @link MetaClass#hasSetter(String)
+   */
   boolean hasSetter(String name);
 
   //是否有指定的getter
+  /**
+   * @link MetaClass#hasGetter(String)
+   */
   boolean hasGetter(String name);
 
   //实例化属性
+  /**
+   * @link MetaObject#forObject(Object, ObjectFactory, ObjectWrapperFactory, ReflectorFactory)
+   */
   MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory);
   
   //是否是集合
+  /**
+   * 是否为集合
+   */
   boolean isCollection();
   
   //添加属性
+  /**
+   * 添加元素到集合
+   */
   public void add(Object element);
   
   //添加属性
+  /**
+   * 添加多个元素到集合
+   */
   public <E> void addAll(List<E> element);
 
 }

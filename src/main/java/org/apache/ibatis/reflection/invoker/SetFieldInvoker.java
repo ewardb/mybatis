@@ -21,9 +21,10 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * @author Clinton Begin
  */
+
 /**
  * setter调用者
- * 
+ * Field 调用者
  */
 public class SetFieldInvoker implements Invoker {
   private Field field;

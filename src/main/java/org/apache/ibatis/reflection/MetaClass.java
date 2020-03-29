@@ -30,8 +30,10 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  * @author Clinton Begin
  */
 /**
+ * 类的元数据
  * 原类
- * 
+ * 基于 Reflector 和 PropertyTokenizer
+ * 提供对指定类的各种骚操作。
  */
 public class MetaClass {
 
@@ -43,6 +45,7 @@ public class MetaClass {
     this.reflector = Reflector.forClass(type);
   }
 
+  //  创建指定类的 MetaClass 对象
   public static MetaClass forClass(Class<?> type) {
     return new MetaClass(type);
   }
@@ -56,7 +59,9 @@ public class MetaClass {
   }
 
   public MetaClass metaClassForProperty(String name) {
+    // 获得属性的类
     Class<?> propType = reflector.getGetterType(name);
+    // 创建 MetaClass 对象
     return MetaClass.forClass(propType);
   }
 
@@ -66,9 +71,11 @@ public class MetaClass {
   }
 
   public String findProperty(String name, boolean useCamelCaseMapping) {
+    // <1> 下划线转驼峰
     if (useCamelCaseMapping) {
       name = name.replace("_", "");
     }
+    // <2> 获得属性
     return findProperty(name);
   }
 
@@ -159,15 +166,21 @@ public class MetaClass {
   }
 
   public boolean hasGetter(String name) {
+    // 创建 PropertyTokenizer 对象，对 name 进行分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      // 判断是否有该属性的 getting 方法
       if (reflector.hasGetter(prop.getName())) {
+        // <1> 创建 MetaClass 对象
         MetaClass metaProp = metaClassForProperty(prop);
+        // 递归判断子表达式 children ，是否有 getting 方法
         return metaProp.hasGetter(prop.getChildren());
       } else {
         return false;
       }
     } else {
+      // 无子表达式
+      // 判断是否有该属性的 getting 方法
       return reflector.hasGetter(prop.getName());
     }
   }

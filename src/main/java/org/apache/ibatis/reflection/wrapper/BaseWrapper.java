@@ -33,6 +33,9 @@ public abstract class BaseWrapper implements ObjectWrapper {
     //什么方法都没实现，只提供了一些util方法
 
   protected static final Object[] NO_ARGUMENTS = new Object[0];
+  /**
+   * MetaObject 对象
+   */
   protected MetaObject metaObject;
 
   protected BaseWrapper(MetaObject metaObject) {
@@ -40,6 +43,13 @@ public abstract class BaseWrapper implements ObjectWrapper {
   }
 
   //解析集合
+  /**
+   * 获得指定属性的值
+   *
+   * @param prop PropertyTokenizer 对象
+   * @param object 指定 Object 对象
+   * @return 值
+   */
   protected Object resolveCollection(PropertyTokenizer prop, Object object) {
     if ("".equals(prop.getName())) {
       return object;
@@ -48,6 +58,13 @@ public abstract class BaseWrapper implements ObjectWrapper {
     }
   }
 
+  /**
+   * 获得集合中指定位置的值
+   *
+   * @param prop PropertyTokenizer 对象
+   * @param collection 集合
+   * @return 值
+   */
   //取集合的值
   //中括号有2个意思，一个是Map，一个是List或数组
   protected Object getCollectionValue(PropertyTokenizer prop, Object collection) {
@@ -83,6 +100,13 @@ public abstract class BaseWrapper implements ObjectWrapper {
     }
   }
 
+  /**
+   * 设置集合中指定位置的值
+   *
+   * @param prop PropertyTokenizer 对象
+   * @param collection 集合
+   * @param value 值
+   */
   //设集合的值
   //中括号有2个意思，一个是Map，一个是List或数组
   protected void setCollectionValue(PropertyTokenizer prop, Object collection, Object value) {

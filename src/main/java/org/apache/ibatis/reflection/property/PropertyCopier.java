@@ -33,6 +33,13 @@ public final class PropertyCopier {
     //复制属性,类似功能的还有别的类，
     //如apache commons beanutil 的BeanUtils.copyProperties
     //Spring 的BeanUtils.copyProperties
+  /**
+   * 将 sourceBean 的属性，复制到 destinationBean 中
+   *
+   * @param type 指定类
+   * @param sourceBean 来源 Bean 对象
+   * @param destinationBean 目标 Bean 对象
+   */
   public static void copyBeanProperties(Class<?> type, Object sourceBean, Object destinationBean) {
     Class<?> parent = type;
     while (parent != null) {
@@ -41,6 +48,7 @@ public final class PropertyCopier {
       for(Field field : fields) {
         try {
           field.setAccessible(true);
+          // 将field 属性 给目标对象赋值
           field.set(destinationBean, field.get(sourceBean));
         } catch (Exception e) {
           // Nothing useful to do, will only fail on final fields, which will be ignored.

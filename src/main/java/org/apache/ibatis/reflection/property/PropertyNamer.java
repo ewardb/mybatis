@@ -55,17 +55,35 @@ public final class PropertyNamer {
   }
 
   //是否是属性
+  /**
+   * 判断是否为 is、get、set 方法
+   *
+   * @param name 方法名
+   * @return 是否
+   */
   public static boolean isProperty(String name) {
       //必须以get|set|is开头
     return name.startsWith("get") || name.startsWith("set") || name.startsWith("is");
   }
 
   //是否是getter
+  /**
+   * 判断是否为 get、is 方法
+   *
+   * @param name 方法名
+   * @return 是否
+   */
   public static boolean isGetter(String name) {
     return name.startsWith("get") || name.startsWith("is");
   }
 
   //是否是setter
+  /**
+   * 判断是否为 set 方法
+   *
+   * @param name 方法名
+   * @return 是否
+   */
   public static boolean isSetter(String name) {
     return name.startsWith("set");
   }

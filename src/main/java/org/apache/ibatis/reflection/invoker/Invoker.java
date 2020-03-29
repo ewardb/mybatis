@@ -22,10 +22,21 @@ import java.lang.reflect.InvocationTargetException;
  */
 /**
  * 调用者
- * 
+ *  适配器模式
+ *
+ * https://blog.csdn.net/weixin_34268843/article/details/91385363
  */
 public interface Invoker {
   //调用
+  /**
+   * 执行调用
+   *
+   * @param target 目标
+   * @param args 参数
+   * @return 结果
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   */
   Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException;
 
   //取得类型

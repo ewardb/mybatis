@@ -21,20 +21,37 @@ import java.util.Iterator;
  * @author Clinton Begin
  */
 /**
+ * 属性分词器
  * 属性分解为标记，迭代子模式
  * 如person[0].birthdate.year，将依次取得person[0], birthdate, year
  * 
  */
 public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<PropertyTokenizer> {
   //例子： person[0].birthdate.year
+  /**
+   * 当前字符串
+   */
   private String name; //person
+  /**
+   * 索引的 {@link #name} ，因为 {@link #name} 如果存在 {@link #index} 会被更改
+   */
   private String indexedName; //person[0]
+  /**
+   * 编号。
+   *
+   * 对于数组 name[0] ，则 index = 0
+   * 对于 Map map[key] ，则 index = key
+   */
   private String index; //0
+  /**
+   * 剩余字符串
+   */
   private String children; //birthdate.year
 
   public PropertyTokenizer(String fullname) {
       //person[0].birthdate.year
       //找.
+    // <1> 初始化 name、children 字符串，使用 . 作为分隔
     int delim = fullname.indexOf('.');
     if (delim > -1) {
       name = fullname.substring(0, delim);
@@ -44,8 +61,10 @@ public class PropertyTokenizer implements Iterable<PropertyTokenizer>, Iterator<
       name = fullname;
       children = null;
     }
+    // <2> 记录当前 name
     indexedName = name;
     //把中括号里的数字给解析出来
+    // 若存在 [ ，则获得 index ，并修改 name 。
     delim = name.indexOf('[');
     if (delim > -1) {
       index = name.substring(delim + 1, name.length() - 1);
