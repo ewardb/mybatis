@@ -29,6 +29,10 @@ import org.apache.ibatis.reflection.SystemMetaObject;
  */
 /**
  * 没有池化的数据源工厂
+ *
+ * 非池化的 DataSourceFactory 实现类
+ *
+ *
  */
 public class UnpooledDataSourceFactory implements DataSourceFactory {
 
@@ -44,15 +48,19 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
   @Override
   public void setProperties(Properties properties) {
     Properties driverProperties = new Properties();
+    // 创建 dataSource 对应的 MetaObject 对象
     MetaObject metaDataSource = SystemMetaObject.forObject(dataSource);
+    // 遍历 properties 属性，初始化到 driverProperties 和 MetaObject 中
     for (Object key : properties.keySet()) {
       String propertyName = (String) key;
       //作为可选项,你可以传递数据库驱动的属性。要这样做,属性的前缀是以“driver.”开 头的,例如
       //driver.encoding=UTF8
       if (propertyName.startsWith(DRIVER_PROPERTY_PREFIX)) {
+        // 初始化到 driverProperties 中
         String value = properties.getProperty(propertyName);
         driverProperties.setProperty(propertyName.substring(DRIVER_PROPERTY_PREFIX_LENGTH), value);
       } else if (metaDataSource.hasSetter(propertyName)) {
+        // 初始化到 MetaObject 中
     	  //如果UnpooledDataSource有相应的setter函数，则设置它
         String value = (String) properties.get(propertyName);
         Object convertedValue = convertValue(metaDataSource, propertyName, value);
@@ -62,6 +70,7 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
       }
     }
     if (driverProperties.size() > 0) {
+      // 设置 driverProperties 到 MetaObject 中
       metaDataSource.setValue("driverProperties", driverProperties);
     }
   }

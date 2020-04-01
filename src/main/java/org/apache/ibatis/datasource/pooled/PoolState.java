@@ -37,8 +37,21 @@ public class PoolState {
   protected long requestCount = 0;
   //总请求时间
   protected long accumulatedRequestTime = 0;
+
+  /**
+   * 全局统计 - 获取到连接非超时 + 超时的占用时长
+   *
+   * 所以，包括 {@link #accumulatedCheckoutTimeOfOverdueConnections} 部分
+   */
   protected long accumulatedCheckoutTime = 0;
+  /**
+   * 全局统计 - 获取到连接超时的次数
+   */
   protected long claimedOverdueConnectionCount = 0;
+
+  /**
+   * 全局统计 - 获取到连接超时的占用时长
+   */
   protected long accumulatedCheckoutTimeOfOverdueConnections = 0;
   //总等待时间
   protected long accumulatedWaitTime = 0;
