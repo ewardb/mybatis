@@ -23,12 +23,13 @@ import org.apache.ibatis.cache.Cache;
 
 /**
  * Lru (first in, first out) cache decorator
- *
+ * apache.ibatis.cache.decorators.LruCache ，实现 Cache 接口，
  * @author Clinton Begin
  */
 /*
  * 最近最少使用缓存
  * 基于 LinkedHashMap 覆盖其 removeEldestEntry 方法实现。
+ * 主要是对于 LinkedHashMap 的黑科技用法
  */
 public class LruCache implements Cache {
 

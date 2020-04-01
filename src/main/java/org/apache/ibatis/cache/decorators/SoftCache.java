@@ -28,6 +28,8 @@ import org.apache.ibatis.cache.Cache;
  * Thanks to Dr. Heinz Kabutz for his guidance here.
  * 软引用缓存,核心是SoftReference
  *
+ * 软引用 是 在内存不足的时候 才会清理
+ *
  * @author Clinton Begin
  */
 public class SoftCache implements Cache {

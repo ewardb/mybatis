@@ -24,6 +24,7 @@ import java.util.List;
  * @author Clinton Begin
  */
 /**
+ * 因为 MyBatis 中的缓存键不是一个简单的 String ，而是通过多个对象组成。所以 CacheKey 可以理解成将多个对象放在一起，计算其缓存键
  * 缓存key
  * 一般缓存框架的数据结构基本上都是 Key-Value 方式存储，
  * MyBatis 对于其 Key 的生成采取规则为：[mappedStementId + offset + limit + SQL + queryParams + environment]生成一个哈希码
@@ -32,15 +33,27 @@ public class CacheKey implements Cloneable, Serializable {
 
   private static final long serialVersionUID = 1146682552656046210L;
 
+  /**
+   * 单例 - 空缓存键
+   */
   public static final CacheKey NULL_CACHE_KEY = new NullCacheKey();
 
   private static final int DEFAULT_MULTIPLYER = 37;
   private static final int DEFAULT_HASHCODE = 17;
 
+  /**
+   * hashcode 求值的系数
+   */
   private int multiplier;
   private int hashcode;
+  /**
+   * 校验和
+   */
   private long checksum;
   private int count;
+  /**
+   * 计算 {@link #hashcode} 的对象的集合
+   */
   private List<Object> updateList;
 
   public CacheKey() {

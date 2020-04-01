@@ -27,13 +27,30 @@ import org.apache.ibatis.cache.Cache;
  * Weak Reference cache decorator.
  * Thanks to Dr. Heinz Kabutz for his guidance here.
  * 弱引用缓存，可以看到代码和SoftCache如出一辙，就是SoftReference变成了WeakReference
- * 
+ *
+ * 弱引用是 在 gc是会清理
+ *
+ * 实现 Cache 接口，基于 java.lang.ref.WeakReference 的 Cache 实现类
+ *
  * @author Clinton Begin
  */
 public class WeakCache implements Cache {
+
+  /**
+   * 强引用的键的队列
+   * 这个仔细理解下！！！
+   */
   private final Deque<Object> hardLinksToAvoidGarbageCollection;
+
+  /**
+   * 被 GC 回收的 WeakEntry 集合，避免被 GC。
+   */
   private final ReferenceQueue<Object> queueOfGarbageCollectedEntries;
+  /**
+   * 装饰的 Cache 对象
+   */
   private final Cache delegate;
+
   private int numberOfHardLinks;
 
   public WeakCache(Cache delegate) {
@@ -50,6 +67,7 @@ public class WeakCache implements Cache {
 
   @Override
   public int getSize() {
+    // 移除已经被 GC 回收的 WeakEntry
     removeGarbageCollectedItems();
     return delegate.getSize();
   }
@@ -101,6 +119,9 @@ public class WeakCache implements Cache {
     return null;
   }
 
+  /**
+   * 移除已经被 GC 回收的键
+   */
   private void removeGarbageCollectedItems() {
     WeakEntry sv;
     while ((sv = (WeakEntry) queueOfGarbageCollectedEntries.poll()) != null) {

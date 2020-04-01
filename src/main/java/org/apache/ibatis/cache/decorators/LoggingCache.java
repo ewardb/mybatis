@@ -32,9 +32,18 @@ import org.apache.ibatis.logging.LogFactory;
 public class LoggingCache implements Cache {
 
   //用的mybatis自己的抽象Log
-  private Log log;  
+  private Log log;
+  /**
+   * 装饰的 Cache 对象
+   */
   private Cache delegate;
+  /**
+   * 统计请求缓存的次数
+   */
   protected int requests = 0;
+  /**
+   * 统计命中缓存的次数
+   */
   protected int hits = 0;
 
   public LoggingCache(Cache delegate) {
