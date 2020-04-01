@@ -99,6 +99,11 @@ public class JdbcTransaction implements Transaction {
     }
   }
 
+  /**
+   * 设置指定的 autoCommit 属性
+   *
+   * @param desiredAutoCommit 指定的 autoCommit 属性
+   */
   protected void setDesiredAutoCommit(boolean desiredAutoCommit) {
     try {
 		//和原来的比一下，再设置autocommit，是考虑多次重复设置的性能问题？
@@ -118,6 +123,9 @@ public class JdbcTransaction implements Transaction {
   }
 
 	//见下面注释，貌似是说是对有些DB的一个workaround
+  /**
+   * 重置 autoCommit 属性
+   */
   protected void resetAutoCommit() {
     try {
       if (!connection.getAutoCommit()) {
