@@ -30,8 +30,14 @@ import org.apache.ibatis.io.Resources;
  */
 public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
+  /**
+   * ObjectTypeHandler 单例
+   */
   private static final ObjectTypeHandler OBJECT_TYPE_HANDLER = new ObjectTypeHandler();
 
+  /**
+   * TypeHandler 注册表
+   */
   private TypeHandlerRegistry typeHandlerRegistry;
 
   public UnknownTypeHandler(TypeHandlerRegistry typeHandlerRegistry) {
@@ -41,7 +47,9 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType)
       throws SQLException {
+    // 获得参数对应的处理器
     TypeHandler handler = resolveTypeHandler(parameter, jdbcType);
+    // 使用 handler 设置参数
     handler.setParameter(ps, i, parameter, jdbcType);
   }
 
@@ -85,8 +93,9 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
   private TypeHandler<?> resolveTypeHandler(ResultSet rs, String column) {
     try {
       Map<String,Integer> columnIndexLookup;
+      // 获得 columnIndex
       columnIndexLookup = new HashMap<String,Integer>();
-      ResultSetMetaData rsmd = rs.getMetaData();
+      ResultSetMetaData rsmd = rs.getMetaData();// 通过 metaData
       int count = rsmd.getColumnCount();
       for (int i=1; i <= count; i++) {
         String name = rsmd.getColumnName(i);
@@ -94,9 +103,11 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
       }
       Integer columnIndex = columnIndexLookup.get(column);
       TypeHandler<?> handler = null;
+      // 首先，通过 columnIndex 获得 TypeHandler
       if (columnIndex != null) {
         handler = resolveTypeHandler(rsmd, columnIndex);
       }
+      // 获得不到，使用 OBJECT_TYPE_HANDLER
       if (handler == null || handler instanceof UnknownTypeHandler) {
         handler = OBJECT_TYPE_HANDLER;
       }
@@ -122,6 +133,8 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
   private JdbcType safeGetJdbcTypeForColumn(ResultSetMetaData rsmd, Integer columnIndex) {
     try {
+      // 从 ResultSetMetaData 中，获得字段类型
+      // 获得 JDBC Type
       return JdbcType.forCode(rsmd.getColumnType(columnIndex));
     } catch (Exception e) {
       return null;

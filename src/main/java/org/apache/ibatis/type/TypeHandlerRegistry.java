@@ -35,12 +35,18 @@ import org.apache.ibatis.io.ResolverUtil;
  */
 /**
  * 类型处理器注册机
- * 
+ *
+ * TypeHandler 注册表，相当于管理 TypeHandler 的容器 从其中能获取到对应的 TypeHandler
  */
 public final class TypeHandlerRegistry {
 
   //枚举型map
   private final Map<JdbcType, TypeHandler<?>> JDBC_TYPE_HANDLER_MAP = new EnumMap<JdbcType, TypeHandler<?>>(JdbcType.class);
+
+
+  /**
+   * 一个 Java Type 可以对应多个 JDBC Type ，也就是多个 TypeHandler
+   */
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> TYPE_HANDLER_MAP = new HashMap<Type, Map<JdbcType, TypeHandler<?>>>();
   private final TypeHandler<Object> UNKNOWN_TYPE_HANDLER = new UnknownTypeHandler(this);
   private final Map<Class<?>, TypeHandler<?>> ALL_TYPE_HANDLERS_MAP = new HashMap<Class<?>, TypeHandler<?>>();
@@ -263,14 +269,18 @@ public final class TypeHandlerRegistry {
   }
 
   private void register(Type javaType, JdbcType jdbcType, TypeHandler<?> handler) {
+    // <1> 添加 handler 到 TYPE_HANDLER_MAP 中
     if (javaType != null) {
+      // 获得 Java Type 对应的 map
       Map<JdbcType, TypeHandler<?>> map = TYPE_HANDLER_MAP.get(javaType);
       if (map == null) {
         map = new HashMap<JdbcType, TypeHandler<?>>();
         TYPE_HANDLER_MAP.put(javaType, map);
       }
+      // 添加到 handler 中 map 中
       map.put(jdbcType, handler);
     }
+    // <2> 添加 handler 到 ALL_TYPE_HANDLERS_MAP 中
     ALL_TYPE_HANDLERS_MAP.put(handler.getClass(), handler);
   }
 

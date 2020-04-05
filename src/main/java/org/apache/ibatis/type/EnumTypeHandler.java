@@ -22,6 +22,7 @@ import java.sql.SQLException;
 
 /**
  * @author Clinton Begin
+ * java.lang.Enum 和 java.util.String 的互相转换
  */
 public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 
@@ -37,6 +38,7 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
     if (jdbcType == null) {
+      // 将 Enum 转换成 String 类型
       ps.setString(i, parameter.name());
     } else {
       ps.setObject(i, parameter.name(), jdbcType.TYPE_CODE); // see r3589

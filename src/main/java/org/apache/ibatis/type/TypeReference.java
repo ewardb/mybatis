@@ -25,10 +25,16 @@ import java.lang.reflect.Type;
  * @author Simone Tripodi
  * @since 3.1.0
  * 3.1新加的类型引用,为了引用一个泛型类型
+ *
+ *
+ * 目的很简单，就是解析类上定义的泛型。
  */
 public abstract class TypeReference<T> {
 
   //引用的原生类型
+  /**
+   * 泛型
+   */
   private final Type rawType;
 
   protected TypeReference() {
@@ -37,6 +43,7 @@ public abstract class TypeReference<T> {
 
   Type getSuperclassTypeParameter(Class<?> clazz) {
     //得到泛型T的实际类型
+    // 【1】从父类中获取 <T>
     Type genericSuperclass = clazz.getGenericSuperclass();
 	//???? 怎么会是Class型
     if (genericSuperclass instanceof Class) {
@@ -49,8 +56,10 @@ public abstract class TypeReference<T> {
         + "Remove the extension or add a type parameter to it.");
     }
 
+    // 【2】获取 <T>
     Type rawType = ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
     // TODO remove this when Reflector is fixed to return Types
+    // 必须是泛型，才获取 <T>
     if (rawType instanceof ParameterizedType) {
       rawType = ((ParameterizedType) rawType).getRawType();
     }

@@ -22,9 +22,10 @@ import java.lang.annotation.Target;
 
 /**
  * @author Eduardo Macarron
+ * 匹配的 JDBC Type 类型的注解
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target(ElementType.TYPE)// 注册到类
 public @interface MappedJdbcTypes {
   public JdbcType[] value();
   boolean includeNullJdbcType() default false;

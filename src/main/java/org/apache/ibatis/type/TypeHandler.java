@@ -25,20 +25,68 @@ import java.sql.SQLException;
  */
 /**
  * 类型处理器
+ * 类型转换处理器
  * 
  */
 public interface TypeHandler<T> {
 
   //设置参数
+  /**
+   * 设置 PreparedStatement 的指定参数
+   *
+   * Java Type => JDBC Type
+   *
+   * @param ps PreparedStatement 对象
+   * @param i 参数占位符的位置
+   * @param parameter 参数
+   * @param jdbcType JDBC 类型
+   * @throws SQLException 当发生 SQL 异常时
+   */
   void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
   //取得结果,供普通select用
+  /**
+   * 获得 ResultSet 的指定字段的值
+   *
+   * JDBC Type => Java Type
+   *
+   * @param rs ResultSet 对象
+   * @param columnName 字段名
+   * @return 值
+   * @throws SQLException 当发生 SQL 异常时
+   */
   T getResult(ResultSet rs, String columnName) throws SQLException;
 
   //取得结果,供普通select用
+  /**
+   * 获得 ResultSet 的指定字段的值
+   *
+   * JDBC Type => Java Type
+   *
+   * @param rs ResultSet 对象
+   * @param columnIndex 字段位置
+   * @return 值
+   * @throws SQLException 当发生 SQL 异常时
+   */
   T getResult(ResultSet rs, int columnIndex) throws SQLException;
 
   //取得结果,供SP用
+  /**
+   * 获得 CallableStatement 的指定字段的值
+   *
+   * JDBC Type => Java Type
+   *
+   * @param cs CallableStatement 对象，支持调用存储过程
+   * @param columnIndex 字段位置
+   * @return 值
+   * @throws SQLException
+   */
   T getResult(CallableStatement cs, int columnIndex) throws SQLException;
+
+
+  /**
+   * setParameter  是 Java Type => JDBC Type 的过程
+   * getResult      是 JDBC Type => Java Type 的过程
+   */
 
 }
