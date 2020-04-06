@@ -19,15 +19,24 @@ import java.io.InputStream;
 import java.net.URL;
 
 /**
- * A class to wrap access to multiple class loaders making them work as one
- *封装了5个类加载器,见getClassLoaders方法
+ * A class  to wrap access to multiple class loaders making them work as one
+ *  封装了5个类加载器,见getClassLoaders方法
+ *
+ *
+ * 类加载器进行封装
  *
  * @author Clinton Begin
  */
 public class ClassLoaderWrapper {
 
   //defaultClassLoader没地方初始化啊?
+  /**
+   * 默认 ClassLoader 对象
+   */
   ClassLoader defaultClassLoader;
+  /**
+   * 系统 ClassLoader 对象
+   */
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
@@ -214,6 +223,13 @@ public class ClassLoaderWrapper {
         Thread.currentThread().getContextClassLoader(),
         getClass().getClassLoader(),
         systemClassLoader};
+  }
+
+  ClassLoader[] getClassLoaders1(ClassLoader classLoader){
+    return new ClassLoader[]{
+            classLoader, defaultClassLoader, Thread.currentThread().getContextClassLoader(), getClass().getClassLoader(), systemClassLoader
+    };
+
   }
 
 }

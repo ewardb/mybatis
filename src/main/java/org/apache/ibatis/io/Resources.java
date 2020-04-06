@@ -33,12 +33,18 @@ import java.util.Properties;
  */
 public class Resources {
 
+  /**
+   * ClassLoaderWrapper 对象
+   */
   //大多数方法都是委托给ClassLoaderWrapper，再去做真正的事
   private static ClassLoaderWrapper classLoaderWrapper = new ClassLoaderWrapper();
 
   /*
    * Charset to use when calling getResourceAsReader.
    * null means use the system default.
+   */
+  /**
+   * 字符集
    */
   private static Charset charset;
 
@@ -259,6 +265,7 @@ public class Resources {
    * @return The loaded class
    * @throws ClassNotFoundException If the class cannot be found (duh!)
    */
+  //  获得指定类名对应的类
   public static Class<?> classForName(String className) throws ClassNotFoundException {
     return classLoaderWrapper.classForName(className);
   }
